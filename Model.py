@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.flatten import Flatten
 from torchvision import models
+import os
+import numpy as np
+
+
 
 class Model(nn.Module):
     def __init__(self):
@@ -44,3 +48,30 @@ class ResnetBlock(nn.Module):
 
     def forward(self, x):
         return x + self.block(x)
+
+
+save_dir = './checkpoints'
+
+
+def loadModel(emotion):
+    iter_file = os.path.join(save_dir, 'iter_%s.txt'%(emotion))
+    model_file = os.path.join(save_dir, 'net_%s_latest.pth'%(emotion))
+    txt = np.loadtxt(iter_file)
+    start_epoch = int(txt[0])
+    total_step = int(txt[1])
+    model = Model().cuda()
+    model.load_state_dict(torch.load(model_file))
+
+    return model, start_epoch, total_step
+
+
+def saveModel(model, emotion, epoch, total_step = 0):
+    save_file = os.path.join(save_dir, 'net_%s_%s.pth' % (emotion, epoch + 1))
+    torch.save(model.cpu().state_dict(), save_file)
+    print('save model in {}'.format(save_file))
+    save_file = os.path.join(save_dir, 'net_%s_latest.pth' % (emotion))
+    torch.save(model.cpu().state_dict(), save_file)
+    iter_path = os.path.join(save_dir, 'iter_%s.txt' % (emotion))
+    np.savetxt(iter_path, (epoch + 1, total_step), fmt='%d')
+    print('----------------')
+    model.cuda()
