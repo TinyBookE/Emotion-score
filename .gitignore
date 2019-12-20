@@ -1,6 +1,7 @@
 checkpoints/*/*.pth
 checkpoints/*/iter*.txt
-results/*.csv
+results/*
+!results/*.txt
 data/
 __pycache__/
 .idea/
