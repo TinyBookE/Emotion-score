@@ -61,7 +61,7 @@ def predict(feature_csv, pkl_dir, output_file):
             s = RFs[j].predict(feature[1:])
             score.append(s)
         # add row
-        scores.iloc[i] = score
+        scores.loc[i] = score
 
     scores.to_csv(output_file)
 

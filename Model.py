@@ -83,13 +83,26 @@ class ResNet(nn.Module):
         return out, 0
 
     def get_optimizer(self, lr=0.0002, adjust = False):
-        return torch.optim.Adam(list(self.net.parameters()), lr=lr)
+        if adjust:
+            params = []
+            params += self.conv1.parameters()
+            params += self.bn1.parameters()
+            params += self.relu.parameters()
+            params += self.maxpool.parameters()
+            params += self.layer1.parameters()
+            params += self.layer2.parameters()
+            params += self.layer3.parameters()
+            params += self.layer4.parameters()
+            params += self.net.parameters()
+        else:
+            params = self.net.parameters()
+        return torch.optim.Adam(params, lr=lr)
 
 
 default_save_dir = './checkpoints'
 
 
-def loadModel(emotion, save_dir = None):
+def loadModel(emotion, model_type = 'VGG', save_dir = None):
     if save_dir is None:
         save_dir = default_save_dir
 
@@ -98,7 +111,12 @@ def loadModel(emotion, save_dir = None):
     txt = np.loadtxt(iter_file)
     start_epoch = int(txt[0])
     total_step = int(txt[1])
-    model = VGG().cuda()
+    if model_type == 'VGG':
+        model = VGG().cuda()
+    elif model_type == 'ResNet':
+        model = ResNet().cuda()
+    else:
+        raise('Unknown model type')
     model.load_state_dict(torch.load(model_file))
 
     return model, start_epoch, total_step

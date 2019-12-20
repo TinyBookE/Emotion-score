@@ -1,7 +1,29 @@
+------VGG-------
 beautiful: 146.729691
 boring: 150.686142
 depressing: 66.713394
 lively: 146.664398
 safety: 79.554443
 wealthy: 101.293167
-----------------
+-----ResNet-----
+beautiful: 191.671524
+boring: 129.710770
+depressing: 79.087128
+lively: 171.611160
+safety: 85.055244
+wealthy: 137.006363
+
+------VGG-------
+beautiful: 157.208511
+boring: 160.730377
+depressing: 72.643028
+lively: 146.400787
+safety: 67.836281
+wealthy: 102.357803
+-----ResNet-----
+beautiful: 202.762573
+boring: 177.872223
+depressing: 88.040962
+lively: 167.425690
+safety: 82.831718
+wealthy: 143.326767

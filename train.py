@@ -5,10 +5,11 @@ from torch.autograd import Variable
 import datetime
 import os
 import numpy as np
+from utils import log
 
 batch_size = 8
 all_epoch = 120
-save_delta = 10
+save_delta = 20
 init_lr = 0.0002
 lr_decay = 20
 adjust = 100
@@ -16,11 +17,11 @@ adjust = 100
 
 def train_VGG(emotion, load = False):
     csv_file = os.path.join('./data/train', emotion + '.csv')
-    custom_data = CustomData(csv_file, './data/train/img_files')
+    custom_data = CustomData('./data/train/img_files', csv_file)
     dataset = DataLoader(custom_data, batch_size=batch_size, shuffle=True)
 
     if load:
-        model, start_epoch, total_step = loadModel(emotion, './checkpoints/VGG19')
+        model, start_epoch, total_step = loadModel(emotion, model_type= 'VGG', save_dir= './checkpoints/VGG19')
         print('continue to train. start from epoch %s'%start_epoch)
     else:
         total_step = 0
@@ -28,6 +29,7 @@ def train_VGG(emotion, load = False):
         model = VGG().cuda()
     print(list(model.children()))
 
+    # if continue train, learn rate decay
     if start_epoch > lr_decay:
         lr = init_lr - (start_epoch - lr_decay) * init_lr / 100.0
     else:
@@ -35,6 +37,7 @@ def train_VGG(emotion, load = False):
 
     for epoch in range(start_epoch, all_epoch):
 
+        # learn rate decay with the epoch increasing
         if epoch > lr_decay:
             lr_dec = init_lr/100.0
             lr = lr - lr_dec
@@ -66,11 +69,11 @@ def train_VGG(emotion, load = False):
 
 def train_ResNet(emotion, load = False):
     csv_file = os.path.join('./data/train', emotion + '.csv')
-    custom_data = CustomData(csv_file, './data/train/img_files')
+    custom_data = CustomData('./data/train/img_files', csv_file)
     dataset = DataLoader(custom_data, batch_size=batch_size, shuffle=True)
 
     if load:
-        model, start_epoch, total_step = loadModel(emotion, './checkpoints/ResNet50')
+        model, start_epoch, total_step = loadModel(emotion, model_type= 'ResNet', save_dir= './checkpoints/ResNet50')
         print('continue to train. start from epoch %s'%start_epoch)
     else:
         total_step = 0
@@ -104,24 +107,17 @@ def train_ResNet(emotion, load = False):
             losses.append(loss.detach().cpu().numpy())
 
         t = datetime.datetime.now()
-        print('current time: ', t)
-        print('epoch: ', epoch+1)
-        print('loss: ', np.average(losses))
-        print('----------------')
+        str = 'current time: {}\nepoch: {}\nloss: {}\n----------------\n' \
+            .format(t, epoch, np.average(losses))
+        print(str)
+        log('checkpoints/ResNet50/log_%s.txt' % emotion, str)
         losses.clear()
 
         if (epoch+1) % save_delta == 0:
-            saveModel(model, emotion, epoch, total_step, './checkpoints/ResNet50')
+            saveModel(model, emotion, epoch, total_step, save_dir= './checkpoints/ResNet50')
 
-
-def log(file, str):
-    with open(file, 'a+') as f:
-        f.write(str)
 
 train_list = ['beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy']
 
-train_VGG('wealthy')
-'''
 for name in train_list:
-    train_VGG(name)
-'''
+    train_ResNet(name)
