@@ -18,8 +18,8 @@ def test_VGG(emotion):
             losses.append(loss.cpu().numpy())
         test_result = emotion + ': %f'%np.average(losses)
         print(test_result)
-        log('./results/test_loss.txt', test_result)
-        log('./results/test_loss.txt', '----------------')
+        log('./results/test_loss.txt', test_result+'\n')
+
 
 
 def log(file, str):
@@ -31,3 +31,4 @@ test_list = ['beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy']
 
 for emotion in test_list:
     test_VGG(emotion)
+log('./results/test_loss.txt', '----------------\n')
