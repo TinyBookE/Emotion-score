@@ -18,7 +18,7 @@ class CustomData(Dataset):
                 self.label.append(df.iloc[i, 1])
         self.norm = torchvision.transforms.Normalize([0.5,0.5,0.5],[0.5,0.5,0.5])
         self.transform = torchvision.transforms.Compose([
-            torchvision.transforms.Resize((240,240)),
+            torchvision.transforms.Resize((224,224)),
             torchvision.transforms.RandomHorizontalFlip(),
             torchvision.transforms.ToTensor()
         ])

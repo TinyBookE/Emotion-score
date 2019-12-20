@@ -1,21 +1,33 @@
 import torch
 from torch.utils.data import DataLoader
 from Dataset import CustomData
-from Model import Model
+from Model import loadModel
 from torch.autograd import Variable
 import numpy as np
+import os
 
-cpt_file = './checkpoints/net_beautiful_80.pth'
+def test_VGG(emotion):
+    csv_file = os.path.join('./data/test', '%s.csv'%emotion)
+    custom_data = CustomData(csv_file, './data/test/img_files')
+    dataset = DataLoader(custom_data, shuffle=False)
+    model, _, _ = loadModel(emotion, './checkpoints/VGG19')
+    with torch.no_grad():
+        losses = []
+        for data in dataset:
+            result, loss = model(Variable(data['img']).cuda(), Variable(data['label']).float().cuda())
+            losses.append(loss.cpu().numpy())
+        test_result = emotion + ': %f'%np.average(losses)
+        print(test_result)
+        log('./results/test_loss.txt', test_result)
+        log('./results/test_loss.txt', '----------------')
 
-custom_data = CustomData('./data/test/beautiful.csv', './data/test/img_files')
-dataset = DataLoader(custom_data, shuffle=False)
-data_size = len(custom_data)
 
-with torch.no_grad():
-    model = Model().cuda()
-    model.load_state_dict(torch.load(cpt_file))
-    losses = []
-    for data in dataset:
-        result, loss = model(Variable(data['img']).cuda(), Variable(data['label']).float().cuda())
-        losses.append(loss.cpu().numpy())
-    print(np.average(losses))
+def log(file, str):
+    with open(file, 'a+') as f:
+        f.write(str)
+
+
+test_list = ['beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy']
+
+for emotion in test_list:
+    test_VGG(emotion)
