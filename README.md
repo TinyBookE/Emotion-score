@@ -4,7 +4,7 @@ Score six emotions based on natural scenes, such as cityscape.
 
 ~~It uses VGG19 simply now. And it may be modified not long after depended on the discussion of our group.~~
 
-~~Comparing the results of VGG19 and ResNet50. We think that VGG19 performs better in this job. ~~
+~~Comparing the results of VGG19 and ResNet50. We think that VGG19 performs better in this job.~~
 
 The test of VGG is lower than truth. Because before training ResNet50, i move some pictures from train set to test set. 
 

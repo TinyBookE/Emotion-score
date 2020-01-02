@@ -4,6 +4,7 @@ checkpoints/*.zip
 checkpoints/*.rar
 results/*
 !results/*.txt
+video/*
 data/
 __pycache__/
 .idea/
