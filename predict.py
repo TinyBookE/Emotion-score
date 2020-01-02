@@ -6,37 +6,52 @@ from Model import loadModel
 import pandas as pd
 import sys, getopt, os
 
-argv = sys.argv
-assert (len(argv) > 1)
-
-emotion = None
-from_dir = None
-to_dir = None
 
 
-opts, args = getopt.getopt(argv[1:], 'e:f:t:', ['emotion=', 'from=', 'to='])
-for opt, value in opts:
-    if opt in ['-e', '--emotion']:
-        emotion = value
-    elif opt in ['-f', '--from']:
-        from_dir = value
-    elif opt in ['-t', '--to']:
-        to_dir = value
+def predict(emotion, from_dir, to_dir):
+    custom_data = CustomData(from_dir, isTrain=False)
+    dataset = DataLoader(custom_data, shuffle=False)
 
-assert (emotion is not None and from_dir is not None and to_dir is not None)
+    df = pd.DataFrame(columns=['filename', 'score'])
 
-custom_data = CustomData(from_dir)
-dataset = DataLoader(custom_data, shuffle=False)
+    with torch.no_grad():
+        model, _, _ = loadModel(emotion, model_type='ResNet', save_dir='./checkpoints/ResNet50', isTrain=False)
 
-df = pd.DataFrame(columns=['filename', 'score'])
+        for i, data in enumerate(dataset):
+            score, _ = model(Variable(data['img']).cuda())
+            df.loc[i] = [data['name'][0], score.cpu().numpy()[0]]
+            if (i+1) % 100 == 0:
+                print('Score %d pictures'%(i+1))
 
-with torch.no_grad():
-    model, _, _ = loadModel(emotion, model_type='VGG', save_dir='./checkpoints/VGG19')
+    print('Score %d pictures'%(len(dataset)))
+    to_file = os.path.join(to_dir, '%s_score.csv' % emotion)
+    df.to_csv(to_file, index=False)
 
-    for i, data in enumerate(dataset):
-        score, _ = model(Variable(data['img']).cuda())
-        df.loc[i] = [data['name'][0], score.cpu().numpy()[0]]
 
-to_file = os.path.join(to_dir, '%s_score.csv'%emotion)
+if __name__ == "__main__":
+    argv = sys.argv
+    assert (len(argv) > 1)
 
-df.to_csv(to_file, index=False)
+    emotion = None
+    from_dir = None
+    to_dir = None
+
+    opts, args = getopt.getopt(argv[1:], 'e:f:t:', ['emotion=', 'from=', 'to='])
+    for opt, value in opts:
+        if opt in ['-e', '--emotion']:
+            emotion = value
+        elif opt in ['-f', '--from']:
+            from_dir = value
+        elif opt in ['-t', '--to']:
+            to_dir = value
+
+    assert (from_dir is not None and to_dir is not None)
+
+    if emotion is not None:
+        print('start scoring %s' % emotion)
+        predict(emotion, from_dir, to_dir)
+    else:
+        emotion = ['beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy']
+        for e in emotion:
+            print('start scoring %s' % e)
+            predict(e, from_dir, to_dir)

@@ -5,10 +5,8 @@ from torchvision import models
 import os
 import numpy as np
 
-
-
 class VGG(nn.Module):
-    def __init__(self):
+    def __init__(self, isTrain = True):
         super(VGG, self).__init__()
         self.vgg19 = models.vgg19(pretrained=True).features
         net = [nn.Conv2d(512, 512, 3, padding=1),
@@ -23,7 +21,10 @@ class VGG(nn.Module):
                nn.ReLU(True), nn.Dropout(0.5, False),
                nn.Linear(2048, 1)]
         self.net = nn.Sequential(*net)
-        self.loss = nn.MSELoss()
+        if isTrain:
+            self.loss = nn.MSELoss()
+        else:
+            self.loss = nn.MSELoss(reduction='none')
 
     def get_optimizer(self, lr=0.0002, adjust = False):
         if adjust:
@@ -43,7 +44,7 @@ class VGG(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self):
+    def __init__(self, isTrain = True):
         super(ResNet, self).__init__()
         resnet = models.resnet50(pretrained=True)
 
@@ -55,16 +56,18 @@ class ResNet(nn.Module):
         self.layer2 = resnet.layer2
         self.layer3 = resnet.layer3
         self.layer4 = resnet.layer4
-        block = [nn.Conv2d(2048, 512, kernel_size=3, padding=1),
-                 nn.AdaptiveAvgPool2d(output_size=(7,7)),
+        block = [nn.AdaptiveAvgPool2d(output_size=(2,2)),
                  Flatten(),
-                 nn.Linear(25088, 4096),
+                 nn.Linear(8192, 4096),
                  nn.ReLU(True), nn.Dropout(0.5, False),
-                 nn.Linear(4096, 4096),
+                 nn.Linear(4096, 2048),
                  nn.ReLU(True), nn.Dropout(0.5, False),
-                 nn.Linear(4096, 1)]
+                 nn.Linear(2048, 1)]
         self.net = nn.Sequential(*block)
-        self.loss = nn.MSELoss()
+        if isTrain:
+            self.loss = nn.MSELoss()
+        else:
+            self.loss = nn.MSELoss(reduction='none')
 
     def forward(self, x, y = None):
         x = self.conv1(x)
@@ -75,8 +78,8 @@ class ResNet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.net(x)
-        out = torch.flatten(x)
+        out = self.net(x)
+        out = torch.flatten(out)
         if y is not None:
             loss = self.loss(out, y)
             return out, loss
@@ -102,7 +105,7 @@ class ResNet(nn.Module):
 default_save_dir = './checkpoints'
 
 
-def loadModel(emotion, model_type = 'VGG', save_dir = None):
+def loadModel(emotion, model_type = 'VGG', save_dir = None, isTrain = True):
     if save_dir is None:
         save_dir = default_save_dir
 
@@ -112,9 +115,9 @@ def loadModel(emotion, model_type = 'VGG', save_dir = None):
     start_epoch = int(txt[0])
     total_step = int(txt[1])
     if model_type == 'VGG':
-        model = VGG().cuda()
+        model = VGG(isTrain).cuda()
     elif model_type == 'ResNet':
-        model = ResNet().cuda()
+        model = ResNet(isTrain).cuda()
     else:
         raise('Unknown model type')
     model.load_state_dict(torch.load(model_file))
@@ -135,3 +138,6 @@ def saveModel(model, emotion, epoch, total_step = 0, save_dir = None):
     np.savetxt(iter_path, (epoch + 1, total_step), fmt='%d')
     print('----------------')
     model.cuda()
+
+if __name__ == "__main__":
+    print(models.resnet50())
