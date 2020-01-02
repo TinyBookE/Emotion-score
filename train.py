@@ -137,7 +137,7 @@ def train_ResNet(emotion, load = False):
             saveModel(model, emotion, epoch, total_step, save_dir= './checkpoints/ResNet50')
 
 
-train_list = ['boring', 'depressing', 'lively', 'safety', 'wealthy']
+train_list = ['beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy']
 
 
 for name in train_list:

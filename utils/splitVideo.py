@@ -23,6 +23,7 @@ def split(file, interval = 1):
     nextPickTime = 0
     count = 0
     totalCount = len(csv_data)
+
     if vc.isOpened():
         rval, frame = vc.read()
     else:

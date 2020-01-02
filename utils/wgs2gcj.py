@@ -6,22 +6,47 @@ a = 6378245.0
 ee = 0.00669342162296594323
 
 
-def converCsv(dir):
-    file_list = os.listdir(dir)
-    for file_name in file_list:
-        file = os.path.join(dir, file_name)
-        gcj_pd = pd.read_csv(file)
-        wgs_pd = pd.DataFrame(columns=['gcj_lng', 'gcj_lat', 'score'])
-        to_file = os.path.join(dir, "result_" + file_name)
-        for i in range(len(gcj_pd)):
-            pos = gcj_pd.iloc[i, 0]
-            wglon, wglat = pos.split('_')
-            wglon = float(wglon)
-            wglat = float(wglat)
-            mglon, mglat = wgs2gcj(wglat, wglon)
-            wgs_pd.loc[i] = [mglon, mglat, gcj_pd.iloc[i, 1]]
-        wgs_pd.to_csv(to_file, index=False)
+def converAndConbine(dir):
+    file_list = []
+    emotion_list = ['beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy']
+    for e in emotion_list:
+        path = os.path.join(dir, e+'_score.csv')
+        assert (os.path.exists(path))
+        file_list.append(path)
 
+    result_pd = pd.DataFrame(columns=['filename', 'wgs_lng', 'wgs_lat', 'gcj_lng', 'gcj_lat',
+                                      'beautiful', 'boring', 'depressing', 'lively', 'safety', 'wealthy'])
+    file = file_list[0]
+    info_pd = pd.read_csv(file, index_col=False)
+    filenames = info_pd.filename.values
+    wgs_lng = []
+    wgs_lat = []
+    gcj_lng = []
+    gcj_lat = []
+
+    for i in range(len(filenames)):
+        wglon, wglat = filenames[i].split('_')
+        wglon = float(wglon)
+        wglat = float(wglat)
+        mglon, mglat = wgs2gcj(wglat, wglon)
+
+        wgs_lng.append(wglon)
+        wgs_lat.append(wglat)
+        gcj_lng.append(mglon)
+        gcj_lat.append(mglat)
+
+    result_pd.iloc[:, 0] = filenames
+    result_pd.iloc[:, 1] = wgs_lng
+    result_pd.iloc[:, 2] = wgs_lat
+    result_pd.iloc[:, 3] = gcj_lng
+    result_pd.iloc[:, 4] = gcj_lat
+
+    for i, file_name in enumerate(file_list):
+        score_pd = pd.read_csv(file_name)
+        result_pd.iloc[:, i+5] = score_pd.score.values
+
+    to_file = os.path.join(dir, 'result.csv')
+    result_pd.to_csv(to_file, index=False)
 
 def wgs2gcj(wgLat, wgLon):
     if outOfChina(wgLat, wgLon):
@@ -65,4 +90,4 @@ def transformLon(x, y):
     ret += (150.0 * sin(x / 12.0 * pi) + 300.0 * sin(x / 30.0 * pi)) * 2.0 / 3.0
     return ret
 if __name__ == "__main__":
-    converCsv('../results/school')
+    converAndConbine('../results/ex_2_resnet')
