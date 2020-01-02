@@ -1,10 +1,10 @@
 checkpoints/*/*.pth
 checkpoints/*/iter*.txt
-checkpoints/*.zip
 checkpoints/*.rar
 results/*
 !results/*.txt
 video/*
 data/
+*.zip
 __pycache__/
 .idea/
