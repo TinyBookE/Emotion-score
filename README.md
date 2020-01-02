@@ -26,6 +26,7 @@ The test of VGG is lower than truth. Because before training ResNet50, i move so
 
 # Predict usage
 if not specify emotion, it will score for six emotions.
+
 `
 python predict.py [-e|--emotion emotion] <-f|--from from_dir> <-t|--to to_dir>
 `
