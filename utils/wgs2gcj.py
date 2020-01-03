@@ -90,4 +90,4 @@ def transformLon(x, y):
     ret += (150.0 * sin(x / 12.0 * pi) + 300.0 * sin(x / 30.0 * pi)) * 2.0 / 3.0
     return ret
 if __name__ == "__main__":
-    converAndConbine('../results/ex_2_resnet')
+    converAndConbine('../results/rotated')

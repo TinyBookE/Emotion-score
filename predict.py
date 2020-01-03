@@ -7,7 +7,6 @@ import pandas as pd
 import sys, getopt, os
 
 
-
 def predict(emotion, from_dir, to_dir):
     custom_data = CustomData(from_dir, isTrain=False)
     dataset = DataLoader(custom_data, shuffle=False)
@@ -46,6 +45,9 @@ if __name__ == "__main__":
             to_dir = value
 
     assert (from_dir is not None and to_dir is not None)
+
+    if not os.path.exists(to_dir):
+        os.mkdir(to_dir)
 
     if emotion is not None:
         print('start scoring %s' % emotion)

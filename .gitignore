@@ -3,6 +3,7 @@ checkpoints/*/iter*.txt
 checkpoints/*.rar
 results/*
 !results/*.txt
+!results/loss/*
 video/*
 data/
 *.zip

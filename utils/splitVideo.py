@@ -8,7 +8,7 @@ def split(file, interval = 1):
 
     csv_file = os.path.join(file_path, inputfile+'.csv')
     csv_data = pd.read_csv(csv_file, index_col=False)
-    out_file = os.path.join(file_path, 'result', '{}_{}.png')
+    out_file = os.path.join(file_path, 'Temp', '{}_{}.png')
 
     longitude = csv_data.Longitude.values
     Latitude = csv_data.Latitude.values
@@ -64,4 +64,4 @@ if __name__ == "__main__":
     if inputfile is None:
         print('splitVideo.py -i <inputfile>')
         sys.exit()
-    split(inputfile, 4)
+    split(inputfile, 1)
